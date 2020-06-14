@@ -1,0 +1,53 @@
+
+import wollok.game.*
+import manzana.*
+import simulacion.*
+import agente.*
+
+program pandemic {
+
+	game.title("Pandemic")
+	game.width(6)
+	game.height(8)
+	game.cellSize(75)
+	
+	(0 .. game.height()-1).forEach (
+		{ fila => (0 .. game.width() -1).forEach({
+			col => const manzana = new Manzana(position=game.at(col,fila))
+			manzana.addPersonas()
+			simulacion.addManzana(manzana)
+			game.addVisual(manzana)
+		})}
+	)
+	agenteSalud.maxDeracha(game.width() -1)
+	agenteSalud.maxArriba(game.height()-1 )
+	agenteSalud.position(game.center())
+	game.addVisual(agenteSalud)
+	
+	
+	keyboard.s().onPressDo { simulacion.simularInfeccion() }
+	keyboard.a().onPressDo { simulacion.addPersonaInfectada()}
+	
+	keyboard.up().onPressDo {agenteSalud.irArriba() }
+	keyboard.down().onPressDo { agenteSalud.irAbajo() }
+	keyboard.left().onPressDo { agenteSalud.irIzquierda() }
+	keyboard.right().onPressDo { agenteSalud.irDerecha()  }
+	keyboard.num1().onPressDo {
+		const manzana = game.colliders(agenteSalud).first()
+		agenteSalud.aislarInfectadosConSintomas(manzana) {
+			
+		}
+	}
+	
+	keyboard.num3().onPressDo {
+		const manzana = game.colliders(agenteSalud).first()
+		const inspeccionManzana = agenteSalud.inspeccionar(manzana)
+		game.say(agenteSalud, "Infectadas " + inspeccionManzana.infectadas().toString() 
+			     + " C/sintomas " + inspeccionManzana.infectadasConSintomas().toString()
+			     + " N/aisladas " + inspeccionManzana.infectadasNoAisladas().toString()
+		)
+	}
+	
+	game.start()
+
+}
